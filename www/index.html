@@ -1,50 +1,116 @@
 <!DOCTYPE html>
-<!--
-    Licensed to the Apache Software Foundation (ASF) under one
-    or more contributor license agreements.  See the NOTICE file
-    distributed with this work for additional information
-    regarding copyright ownership.  The ASF licenses this file
-    to you under the Apache License, Version 2.0 (the
-    "License"); you may not use this file except in compliance
-    with the License.  You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing,
-    software distributed under the License is distributed on an
-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-     KIND, either express or implied.  See the License for the
-    specific language governing permissions and limitations
-    under the License.
--->
-<html>
-    <head>
-        <meta charset="utf-8">
-        <!--
-        Customize this policy to fit your own app's needs. For more guidance, please refer to the docs:
-            https://cordova.apache.org/docs/en/latest/
-        Some notes:
-            * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
-            * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
-                * Enable inline JS: add 'unsafe-inline' to default-src
-        -->
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
-        <meta name="format-detection" content="telephone=no">
-        <meta name="msapplication-tap-highlight" content="no">
-        <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
-        <meta name="color-scheme" content="light dark">
-        <link rel="stylesheet" href="css/index.css">
-        <title>Hello World</title>
-    </head>
-    <body>
-        <div class="app">
-            <h1>Apache Cordova</h1>
-            <div id="deviceready" class="blink">
-                <p class="event listening">Connecting to Device</p>
-                <p class="event received">Device is Ready</p>
-            </div>
-        </div>
-        <script src="cordova.js"></script>
-        <script src="js/index.js"></script>
-    </body>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>التقويم الهجري</title>
+<style>
+@font-face{font-family:"Aref";src:url("fonts/ArefRuqaa-Regular.ttf");font-weight:400}
+@font-face{font-family:"Aref";src:url("fonts/ArefRuqaa-Bold.ttf");font-weight:700}
+:root{--bg:#EEF3F1;--card:#FFFFFF;--ink:#10302B;--mute:#5B7670;--acc:#1F6F5C;--acc2:#D9F0E8;--line:#D3E0DC}
+:root[data-theme=dark]{--bg:#0C1A24;--card:#132836;--ink:#E6EEF0;--mute:#8AA2AB;--acc:#D9A93E;--acc2:#2A3B2E;--line:#23394A}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Aref",serif;padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom);min-height:100vh;transition:background .3s}
+header{display:flex;justify-content:space-between;align-items:center;padding:12px 0}
+button{font:inherit;background:none;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:6px 12px}
+.hero{text-align:center;padding:10px 0 18px}
+.day{font-size:5.5rem;font-weight:700;line-height:1;color:var(--acc)}
+.month{font-size:1.9rem;margin-top:4px}
+.sub{color:var(--mute);margin-top:6px;font-size:1.05rem}
+.clock{font-size:1.4rem;margin-top:8px;direction:ltr}
+.nav{display:flex;justify-content:space-between;align-items:center;margin:8px 0}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px}
+.grid b{text-align:center;color:var(--mute);font-weight:400;font-size:.85rem;padding-bottom:4px}
+.c{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;font-size:1.15rem}
+.c small{font-size:.6rem;color:var(--mute);font-family:sans-serif}
+.c.t{background:var(--acc);color:var(--bg)}.c.t small{color:inherit;opacity:.8}
+.pr{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:16px}
+.pr div{display:flex;justify-content:space-between;padding:11px 16px;border-bottom:1px solid var(--line)}
+.pr div:last-child{border:0}.pr .n{background:var(--acc2);color:var(--ink)}
+.pr span:last-child{direction:ltr;font-family:sans-serif}
+.loc{display:block;margin:14px auto;color:var(--mute)}
+</style>
+</head>
+<body>
+<header><button id="th">🌓 المظهر</button><button id="gps">📍 موقعي</button></header>
+<section class="hero">
+  <div class="day" id="d"></div>
+  <div class="month" id="m"></div>
+  <div class="sub" id="w"></div>
+  <div class="clock" id="clk"></div>
+</section>
+<div class="nav"><button id="nx">›</button><span id="ttl"></span><button id="pv">‹</button></div>
+<div class="grid" id="g"></div>
+<div class="pr" id="pr"></div>
+<button class="loc" id="lc"></button>
+<script>
+const MONTHS=["محرم","صفر","ربيع الأول","ربيع الآخر","جمادى الأولى","جمادى الآخرة","رجب","شعبان","رمضان","شوال","ذو القعدة","ذو الحجة"];
+const DAYS=["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+const fmt=new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn",{day:"numeric",month:"numeric",year:"numeric"});
+const H=d=>{const p=Object.fromEntries(fmt.formatToParts(d).map(x=>[x.type,x.value]));return{d:+p.day,m:+p.month,y:parseInt(p.year)}};
+const noon=d=>{const x=new Date(d);x.setHours(12,0,0,0);return x};
+const add=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const monthStart=d=>{d=noon(d);while(H(d).d>1)d=add(d,-1);return d};
+const store={get:(k,f)=>{try{return JSON.parse(localStorage.getItem(k))??f}catch(e){return f}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let loc=store.get("loc",{lat:21.4225,lng:39.8262,name:"مكة المكرمة (افتراضي)"});
+let shown=null,lastKey="",effDate=null;
+const R=Math.PI/180,sin=x=>Math.sin(x*R),cos=x=>Math.cos(x*R),tan=x=>Math.tan(x*R);
+const acos=x=>Math.acos(Math.max(-1,Math.min(1,x)))/R;
+function prayers(date){
+  const tz=-date.getTimezoneOffset()/60;
+  const jd=Date.UTC(date.getFullYear(),date.getMonth(),date.getDate(),12)/864e5+2440587.5;
+  const D=jd-2451545,g=357.529+0.98560028*D,q=280.459+0.98564736*D;
+  const L=q+1.915*sin(g)+0.02*sin(2*g),e=23.439-3.6e-7*D;
+  const decl=Math.asin(sin(e)*sin(L))/R;
+  let ra=Math.atan2(cos(e)*sin(L),cos(L))/R/15;ra=((ra%24)+24)%24;
+  const eqt=q/15-ra,E=((eqt+12)%24+24)%24-12;
+  const mid=12+tz-loc.lng/15-E;
+  const at=(a,s)=>mid+s*acos((-sin(a)-sin(decl)*sin(loc.lat))/(cos(decl)*cos(loc.lat)))/15;
+  const asrA=-(Math.atan(1/(1+tan(Math.abs(loc.lat-decl))))/R);
+  const asr=mid+acos((sin(asrA)-sin(loc.lat)*sin(decl))/(cos(loc.lat)*cos(decl)))/15;
+  const mag=at(0.833,1);
+  const hrs={fajr:at(18.5,-1),sun:at(0.833,-1),dhr:mid+0.03,asr,mag,isha:mag+1.5};
+  const out={};for(const k in hrs){const t=new Date(date);t.setHours(0,0,0,0);t.setTime(t.getTime()+hrs[k]*36e5);out[k]=t}
+  return out;
+}
+const hm=t=>t.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+function tick(){
+  const now=new Date(),p=prayers(now);
+  const eff=now>=p.mag?add(noon(now),1):noon(now);
+  const key=eff.toDateString()+loc.lat;
+  const h=H(eff);effDate=eff;
+  d.textContent=h.d;m.textContent=MONTHS[h.m-1]+" "+h.y+" هـ";
+  w.textContent=DAYS[now.getDay()]+" · "+now.toLocaleDateString("ar",{day:"numeric",month:"long",year:"numeric"});
+  clk.textContent=now.toLocaleTimeString("en-GB");
+  if(key!==lastKey){lastKey=key;shown=monthStart(eff);grid(eff);prayerList(now,p)}
+}
+function grid(eff){
+  const s=shown,hs=H(s);
+  ttl.textContent=MONTHS[hs.m-1]+" "+hs.y;
+  let html=DAYS.map(x=>`<b>${x.slice(0,3)}</b>`).join("");
+  html+="<i></i>".repeat(s.getDay());
+  for(let x=s;H(x).m===hs.m;x=add(x,1)){
+    const t=x.toDateString()===eff.toDateString();
+    html+=`<div class="c${t?" t":""}">${H(x).d}<small>${x.getDate()}</small></div>`;
+  }
+  g.innerHTML=html;
+}
+function prayerList(now,p){
+  const L=[["الفجر","fajr"],["الشروق","sun"],["الظهر","dhr"],["العصر","asr"],["المغرب","mag"],["العشاء","isha"]];
+  const next=L.find(([,k])=>p[k]>now)?.[1];
+  pr.innerHTML=L.map(([n,k])=>`<div class="${k===next?"n":""}"><span>${n}</span><span>${hm(p[k])}</span></div>`).join("");
+  lc.textContent="📍 "+loc.name;
+}
+const step=n=>{shown=n>0?monthStart(add(shown,35)):monthStart(add(shown,-1));grid(effDate)};
+nx.onclick=()=>step(-1);pv.onclick=()=>step(1);
+gps.onclick=lc.onclick=()=>navigator.geolocation?.getCurrentPosition(
+  r=>{loc={lat:r.coords.latitude,lng:r.coords.longitude,name:"موقعك الحالي"};store.set("loc",loc);lastKey="";tick()},
+  ()=>alert("تعذّر تحديد الموقع. فعّل إذن الموقع للتطبيق."));
+function theme(t){document.documentElement.dataset.theme=t;store.set("theme",t)}
+th.onclick=()=>theme(document.documentElement.dataset.theme==="dark"?"light":"dark");
+theme(store.get("theme",matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light"));
+document.addEventListener("visibilitychange",()=>{lastKey="";tick()});
+setInterval(tick,1000);tick();
+</script>
+</body>
 </html>
