@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0" xmlns:android="http://schemas.android.com/apk/res/android" id="hijri-widget" version="1.0.0">
+  <name>HijriWidget</name>
+  <platform name="android">
+    <config-file target="AndroidManifest.xml" parent="/manifest/application">
+      <receiver android:name="com.example.hijri.HijriWidget" android:exported="false">
+        <intent-filter>
+          <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+        </intent-filter>
+        <meta-data android:name="android.appwidget.provider" android:resource="@xml/hijri_widget_info"/>
+      </receiver>
+    </config-file>
+    <source-file src="src/android/HijriWidget.java" target-dir="app/src/main/java/com/example/hijri"/>
+    <resource-file src="src/android/hijri_widget.xml" target="app/src/main/res/layout/hijri_widget.xml"/>
+    <resource-file src="src/android/hijri_widget_info.xml" target="app/src/main/res/xml/hijri_widget_info.xml"/>
+    <resource-file src="src/android/widget_bg.xml" target="app/src/main/res/drawable/widget_bg.xml"/>
+  </platform>
+</plugin>

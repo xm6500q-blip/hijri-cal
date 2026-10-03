@@ -15,7 +15,7 @@ jobs:
       - run: npm i -g cordova
       - run: cordova platform add android
       - run: cordova plugin add cordova-plugin-geolocation
-      - run: cordova plugin add ./plugins/hijri-widget
+      - run: cordova plugin add ./widget-plugin
       - run: cordova build android
       - uses: actions/upload-artifact@v4
         with:

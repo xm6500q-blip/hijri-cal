@@ -1,0 +1,8 @@
+{
+  "name": "hijri-widget",
+  "version": "1.0.0",
+  "cordova": {
+    "id": "hijri-widget",
+    "platforms": ["android"]
+  }
+}
