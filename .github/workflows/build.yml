@@ -16,6 +16,15 @@ jobs:
       - run: cordova platform add android
       - run: cordova plugin add cordova-plugin-geolocation
       - run: cordova plugin add ./widget-plugin
+      - name: Copy widget files
+        run: |
+          R=platforms/android/app/src/main
+          mkdir -p $R/res/xml $R/res/layout $R/res/drawable $R/java/com/example/hijri
+          cp widget-plugin/src/android/hijri_widget_info.xml $R/res/xml/
+          cp widget-plugin/src/android/hijri_widget.xml $R/res/layout/
+          cp widget-plugin/src/android/widget_bg.xml $R/res/drawable/
+          cp widget-plugin/src/android/HijriWidget.java $R/java/com/example/hijri/
+          ls $R/res/xml
       - run: cordova build android
       - uses: actions/upload-artifact@v4
         with:
